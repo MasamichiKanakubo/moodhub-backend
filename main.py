@@ -125,12 +125,7 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
-
-@app.get("/hello")
-async def root():
-    return {"message": "Hello"}
