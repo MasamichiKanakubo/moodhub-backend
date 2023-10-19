@@ -13,6 +13,7 @@ from collections import defaultdict
 from apscheduler.schedulers.background import BackgroundScheduler
 from schemas import Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register
 
+# github確認
 load_dotenv()
 
 client = MongoClient(os.environ["MONGO_URL"])
