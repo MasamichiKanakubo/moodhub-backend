@@ -77,6 +77,10 @@ async def schedule_room_deletion(room_id):
     collection = db["RoomTable"]
     collection.delete_one({"room_id": room_id})
 
+async def schedule_user_deletion(user_id):
+    await asyncio.sleep(30)
+    collection = db["UserTable"]
+    collection.delete_one({"user_id": user_id})
 @strawberry.type
 class Mutation:
     @strawberry.field
@@ -105,6 +109,7 @@ class Mutation:
     def register(self, regist:Register) -> RegisterComplete:
         collection = db["UserTable"]
         collection.insert_one(regist.__dict__)
+        asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
 
 
