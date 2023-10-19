@@ -21,11 +21,13 @@ type Query {
 input Register {
   userId: Int!
   categories: [String!]!
+  userName: String!
 }
 
 type RegisterComplete {
   userId: Int!
   categories: [String!]!
+  userName: String!
 }
 
 type Room {

@@ -10,13 +10,13 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-
+from apscheduler.schedulers.background import BackgroundScheduler
+from schemas import Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register
 
 load_dotenv()
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
-
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
@@ -26,50 +26,6 @@ sp = spotipy.Spotify(
         client_id=client_id, client_secret=client_secret
     )
 )
-
-
-@strawberry.type
-class User:
-    name: str
-    age: int
-
-
-@strawberry.type
-class Song:
-    song_name: str
-    categories : List[str]
-
-
-@strawberry.type
-class Room:
-    room_id: int
-    user_id: List[int]
-    name: str
-    
-
-@strawberry.type
-class RegisterComplete:
-    user_id : int
-    categories : List[str]
-
-
-@strawberry.input
-class CreateRoom:
-    user_id: int
-    room_name: str
-
-
-@strawberry.input
-class JoinRoom:
-    user_id: int
-    room_id: int
-    
-@strawberry.input
-class Register:
-    user_id : int
-    categories : List[str]
-
-
 @strawberry.type
 class Query:
     @strawberry.field
@@ -119,12 +75,13 @@ class Mutation:
     @strawberry.field
     def create_room(self, room: CreateRoom) -> Room:
         new_room = Room(
-            room_id=random.randint(1, 10000),
+            room_id=random.randint(1, 100000),
             user_id=[room.user_id],
             name=room.room_name,
         )
         collection = db["RoomTable"]
         collection.insert_one(new_room.__dict__)
+        
         return new_room
 
     @strawberry.field
