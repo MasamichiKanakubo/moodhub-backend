@@ -31,7 +31,7 @@ class Query:
     @strawberry.field
     def song(self, room_id: int) -> List[Song]:
         room = db["RoomTable"].find_one({'room_id':room_id})
-        print(room)
+        # print(room)
         menber_categories_list = []
         
         user_ids = room["user_id"]
