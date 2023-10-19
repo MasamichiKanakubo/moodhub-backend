@@ -5,14 +5,14 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 import strawberry
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks, Depends
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
 from apscheduler.schedulers.background import BackgroundScheduler
 from schemas import Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register
-
+import asyncio
 # github確認
 load_dotenv()
 
@@ -71,10 +71,16 @@ class Query:
         return sliced_song
 
 
+async def schedule_room_deletion(room_id):
+    # 24時間後にルームを削除
+    await asyncio.sleep(86400)  
+    collection = db["RoomTable"]
+    collection.delete_one({"room_id": room_id})
+
 @strawberry.type
 class Mutation:
     @strawberry.field
-    def create_room(self, room: CreateRoom) -> Room:
+    async def create_room(self, room: CreateRoom) -> Room:
         new_room = Room(
             room_id=random.randint(1, 100000),
             user_id=[room.user_id],
@@ -82,7 +88,7 @@ class Mutation:
         )
         collection = db["RoomTable"]
         collection.insert_one(new_room.__dict__)
-        
+        asyncio.create_task(schedule_room_deletion(new_room.room_id))
         return new_room
 
     @strawberry.field
@@ -102,7 +108,6 @@ class Mutation:
         return regist
 
 
-
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 sdl = str(schema)
@@ -111,6 +116,7 @@ with open("schema.graphql", "w") as f:
     f.write(sdl)
 
 graphql_app = GraphQL(schema)
+
 
 app = FastAPI()
 
