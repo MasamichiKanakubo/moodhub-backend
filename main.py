@@ -10,7 +10,6 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from apscheduler.schedulers.background import BackgroundScheduler
 from schemas import Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register
 import asyncio
 # github確認
