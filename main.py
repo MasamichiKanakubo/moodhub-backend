@@ -78,9 +78,10 @@ async def schedule_room_deletion(room_id):
     collection.delete_one({"room_id": room_id})
 
 async def schedule_user_deletion(user_id):
-    await asyncio.sleep(30)
+    await asyncio.sleep(86400)
     collection = db["UserTable"]
     collection.delete_one({"user_id": user_id})
+    
 @strawberry.type
 class Mutation:
     @strawberry.field
