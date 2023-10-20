@@ -21,6 +21,8 @@ class RegisterComplete:
     user_id : int
     categories : List[str]
     user_name : str
+    gender : str
+    age : int
 
 
 @strawberry.input
@@ -39,4 +41,6 @@ class Register:
     user_id : int
     categories : List[str]
     user_name : str
+    gender : str
+    age : int
     
