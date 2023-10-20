@@ -12,6 +12,7 @@ import random
 from collections import defaultdict
 from schemas import Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register
 import asyncio
+import aiohttp
 # github確認
 load_dotenv()
 
@@ -125,6 +126,7 @@ graphql_app = GraphQL(schema)
 
 app = FastAPI()
 
+deploy_url = 'https://mood-hub-v2.onrender.com'
 
 app.add_route("/graphql", graphql_app)
 
@@ -136,7 +138,17 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
+async def send_request():
+    while True:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(deploy_url) as response:
+                print(await response.text())
+        await asyncio.sleep(60)  # 60秒ごとにリクエストを送信
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(send_request())
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
