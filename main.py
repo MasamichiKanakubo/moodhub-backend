@@ -64,14 +64,14 @@ class Query:
         for k in menber_categories_list:
             results = sp.search(q=k, limit=3, market="JP", type="playlist")
 
-            for idx, playlist in enumerate(results["playlists"]["items"]):
+            for playlist in results["playlists"]["items"]:
                 playlisturl = str(playlist["href"]).split("/")
                 # URLの最後の要素が欲しいので分割
                 playlistID = playlisturl[len(playlisturl) - 1]
                 # URLの最後の部分がプレイリストID
                 playListTrack = sp.playlist(playlist_id=playlistID, market="JP")
 
-                for i, track in enumerate(playListTrack["tracks"]["items"]):
+                for track in playListTrack["tracks"]["items"]:
                     name = track["track"]["name"]
                     song_categories[name].add(k)
 
