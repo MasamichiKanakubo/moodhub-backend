@@ -10,14 +10,27 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register
+from schemas import (
+    Song,
+    Room,
+    RegisterComplete,
+    CreateRoom,
+    JoinRoom,
+    Register,
+    UpdateCategories,
+    GetRoomMembers,
+    RoomMembers
+)
 import asyncio
 import aiohttp
+
 # github確認
 load_dotenv()
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
+collection_room = db["RoomTable"]
+collection_user = db["UserTable"]
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
@@ -27,61 +40,65 @@ sp = spotipy.Spotify(
         client_id=client_id, client_secret=client_secret
     )
 )
+
+
 @strawberry.type
 class Query:
     @strawberry.field
     def song(self, room_id: int) -> List[Song]:
-        room = db["RoomTable"].find_one({'room_id':room_id})
+        room = collection_room.find_one({"room_id": room_id})
         # print(room)
         menber_categories_list = []
-        
+
         user_ids = room["user_id"]
-        
+
         for user_id in user_ids:
             try:
-                user = db["UserTable"].find_one({"user_id":user_id})
+                user = collection_user.find_one({"user_id": user_id})
                 categories = user["categories"]
             except TypeError:
                 continue
-            for c in categories:
-                menber_categories_list.append(c)
-            
+            for category in categories:
+                menber_categories_list.append(category)
 
-        song_categories = defaultdict(set)  
+        song_categories = defaultdict(set)
 
-        for k in menber_categories_list:
-            results = sp.search(q=k, limit=3, market="JP", type="playlist")
+        for category_name in menber_categories_list:
+            results = sp.search(q=category_name, limit=3, market="JP", type="playlist")
 
-            for idx, playlist in enumerate(results["playlists"]["items"]):
+            for playlist in results["playlists"]["items"]:
                 playlisturl = str(playlist["href"]).split("/")
                 # URLの最後の要素が欲しいので分割
-                playlistID = playlisturl[len(playlisturl)-1]
+                playlistID = playlisturl[len(playlisturl) - 1]
                 # URLの最後の部分がプレイリストID
                 playListTrack = sp.playlist(playlist_id=playlistID, market="JP")
 
-                for i, track in enumerate(playListTrack["tracks"]["items"]):
+                for track in playListTrack["tracks"]["items"]:
                     name = track["track"]["name"]
-                    song_categories[name].add(k)  
+                    song_categories[name].add(category_name)
 
-        songs = [Song(song_name=name, categories=list(song_categories[name])) for name in song_categories.keys()]
+        songs = [
+            Song(song_name=name, categories=list(song_categories[name]))
+            for name in song_categories.keys()
+        ]
 
         songs.sort(key=lambda x: len(x.categories), reverse=True)
         sliced_song = songs[:30]
-                
+
         return sliced_song
 
 
 async def schedule_room_deletion(room_id):
     # 24時間後にルームを削除
-    await asyncio.sleep(86400)  
-    collection = db["RoomTable"]
-    collection.delete_one({"room_id": room_id})
+    await asyncio.sleep(86400)
+    collection_room.delete_one({"room_id": room_id})
+
 
 async def schedule_user_deletion(user_id):
     await asyncio.sleep(86400)
-    collection = db["UserTable"]
-    collection.delete_one({"user_id": user_id})
-    
+    collection_user.delete_one({"user_id": user_id})
+
+
 @strawberry.type
 class Mutation:
     @strawberry.field
@@ -91,27 +108,49 @@ class Mutation:
             user_id=[room.user_id],
             name=room.room_name,
         )
-        collection = db["RoomTable"]
-        collection.insert_one(new_room.__dict__)
+        collection_room.insert_one(new_room.__dict__)
         asyncio.create_task(schedule_room_deletion(new_room.room_id))
         return new_room
 
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
-        collection = db["RoomTable"]
-        collection.update_one(
-            {"room_id": join.room_id}, {"$push": {"user_id": join.user_id}}
+        collection_room.update_one(
+            {"room_id": join.room_id},
+            {"$push": {"user_id": join.user_id}}
         )
-        room = collection.find_one(filter={"room_id": join.room_id})
+        room = collection_room.find_one(filter={"room_id": join.room_id})
         return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
-    
 
     @strawberry.field
-    def register(self, regist:Register) -> RegisterComplete:
-        collection = db["UserTable"]
-        collection.insert_one(regist.__dict__)
+    def update_caategory(self, update: UpdateCategories) -> RegisterComplete:
+        collection_user.update_one(
+            {"user_id": update.user_id},
+            {"$push": {"categories": {"$each": update.categories}}},
+        )
+        user = collection_user.find_one(filter={"user_id": update.user_id})
+        return RegisterComplete(
+            user_id=user["user_id"],
+            categories=user["categories"],
+            user_name=user["user_name"],
+        )
+
+    @strawberry.field
+    def register(self, regist: Register) -> RegisterComplete:
+        collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
+    
+    @strawberry.field
+    def get_members(self, members: GetRoomMembers) -> RoomMembers:
+        room = collection_room.find_one(filter={'room_id':members.room_id})
+        user_ids = room['user_id']
+        
+        user_names = []
+        for user_id in user_ids:
+            user = collection_user.find_one(filter={'user_id': user_id})
+            user_name = user['user_name']
+            user_names.append(user_name)
+        return RoomMembers(room_name=room['name'], members=user_names)       
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
@@ -126,17 +165,18 @@ graphql_app = GraphQL(schema)
 
 app = FastAPI()
 
-deploy_url = 'https://mood-hub-v2.onrender.com'
+deploy_url = "https://mood-hub-v2.onrender.com"
 
 app.add_route("/graphql", graphql_app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 
 async def send_request():
     while True:
@@ -145,9 +185,11 @@ async def send_request():
                 print(await response.text())
         await asyncio.sleep(60)  # 60秒ごとにリクエストを送信
 
+
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(send_request())
+
 
 @app.get("/")
 async def root():
