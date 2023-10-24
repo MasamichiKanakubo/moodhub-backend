@@ -18,6 +18,8 @@ from schemas import (
     JoinRoom,
     Register,
     UpdateCategories,
+    GetRoomMembers,
+    RoomMembers
 )
 import asyncio
 import aiohttp
@@ -56,13 +58,13 @@ class Query:
                 categories = user["categories"]
             except TypeError:
                 continue
-            for c in categories:
-                menber_categories_list.append(c)
+            for category in categories:
+                menber_categories_list.append(category)
 
         song_categories = defaultdict(set)
 
-        for k in menber_categories_list:
-            results = sp.search(q=k, limit=3, market="JP", type="playlist")
+        for category_name in menber_categories_list:
+            results = sp.search(q=category_name, limit=3, market="JP", type="playlist")
 
             for playlist in results["playlists"]["items"]:
                 playlisturl = str(playlist["href"]).split("/")
@@ -73,7 +75,7 @@ class Query:
 
                 for track in playListTrack["tracks"]["items"]:
                     name = track["track"]["name"]
-                    song_categories[name].add(k)
+                    song_categories[name].add(category_name)
 
         songs = [
             Song(song_name=name, categories=list(song_categories[name]))
@@ -137,6 +139,18 @@ class Mutation:
         collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
+    
+    @strawberry.field
+    def get_members(self, members: GetRoomMembers) -> RoomMembers:
+        room = collection_room.find_one(filter={'room_id':members.room_id})
+        user_ids = room['user_id']
+        
+        user_names = []
+        for user_id in user_ids:
+            user = collection_user.find_one(filter={'user_id': user_id})
+            user_name = user['user_name']
+            user_names.append(user_name)
+        return RoomMembers(room_name=room['name'], members=user_names)       
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

@@ -35,3 +35,4 @@ for track in results['tracks']['items']:
     track_info = sp.audio_features(track_id)
     bpm = track_info[0]['tempo']
     print(f'{name} : {bpm}')
+

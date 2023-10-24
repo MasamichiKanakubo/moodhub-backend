@@ -14,7 +14,12 @@ class Room:
     room_id: int
     user_id: List[int]
     name: str
-    
+
+
+@strawberry.type
+class RoomMembers:
+    room_name: str
+    members: List[str]
 
 @strawberry.type
 class RegisterComplete:
@@ -49,3 +54,7 @@ class UpdateCategories:
     user_id: int
     categories: List[str]
     
+    
+@strawberry.input
+class GetRoomMembers:
+    room_id: int
