@@ -18,6 +18,8 @@ load_dotenv()
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
+collection_room = db['RoomTable']
+collection_user = db['UserTable']
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
@@ -31,7 +33,7 @@ sp = spotipy.Spotify(
 class Query:
     @strawberry.field
     def song(self, room_id: int) -> List[Song]:
-        room = db["RoomTable"].find_one({'room_id':room_id})
+        room = collection_room.find_one({'room_id':room_id})
         # print(room)
         menber_categories_list = []
         
@@ -39,7 +41,7 @@ class Query:
         
         for user_id in user_ids:
             try:
-                user = db["UserTable"].find_one({"user_id":user_id})
+                user = collection_user.find_one({"user_id":user_id})
                 categories = user["categories"]
             except TypeError:
                 continue
@@ -74,13 +76,11 @@ class Query:
 async def schedule_room_deletion(room_id):
     # 24時間後にルームを削除
     await asyncio.sleep(86400)  
-    collection = db["RoomTable"]
-    collection.delete_one({"room_id": room_id})
+    collection_room.delete_one({"room_id": room_id})
 
 async def schedule_user_deletion(user_id):
     await asyncio.sleep(86400)
-    collection = db["UserTable"]
-    collection.delete_one({"user_id": user_id})
+    collection_user.delete_one({"user_id": user_id})
     
 @strawberry.type
 class Mutation:
@@ -91,25 +91,22 @@ class Mutation:
             user_id=[room.user_id],
             name=room.room_name,
         )
-        collection = db["RoomTable"]
-        collection.insert_one(new_room.__dict__)
+        collection_room.insert_one(new_room.__dict__)
         asyncio.create_task(schedule_room_deletion(new_room.room_id))
         return new_room
 
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
-        collection = db["RoomTable"]
-        collection.update_one(
+        collection_room.update_one(
             {"room_id": join.room_id}, {"$push": {"user_id": join.user_id}}
         )
-        room = collection.find_one(filter={"room_id": join.room_id})
+        room = collection_room.find_one(filter={"room_id": join.room_id})
         return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
     
 
     @strawberry.field
     def register(self, regist:Register) -> RegisterComplete:
-        collection = db["UserTable"]
-        collection.insert_one(regist.__dict__)
+        collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
 
