@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import strawberry
 from fastapi import FastAPI
 from strawberry.asgi import GraphQL
@@ -21,8 +21,8 @@ class RegisterComplete:
     user_id : int
     categories : List[str]
     user_name : str
-    gender : str
-    age : int
+    gender : Optional[str] = None
+    age : Optional[int] = None
 
 
 @strawberry.input
@@ -41,6 +41,6 @@ class Register:
     user_id : int
     categories : List[str]
     user_name : str
-    gender : str
-    age : int
+    gender : Optional[str] = None
+    age : Optional[int] = None
     

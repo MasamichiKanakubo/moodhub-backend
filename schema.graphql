@@ -22,16 +22,16 @@ input Register {
   userId: Int!
   categories: [String!]!
   userName: String!
-  gender: String!
-  age: Int!
+  gender: String = null
+  age: Int = null
 }
 
 type RegisterComplete {
   userId: Int!
   categories: [String!]!
   userName: String!
-  gender: String!
-  age: Int!
+  gender: String
+  age: Int
 }
 
 type Room {
