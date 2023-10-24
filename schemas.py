@@ -44,3 +44,8 @@ class Register:
     gender : Optional[str] = None
     age : Optional[int] = None
     
+@strawberry.input
+class UpdateCategories:
+    user_id: int
+    categories: List[str]
+    

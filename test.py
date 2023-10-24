@@ -28,47 +28,10 @@ sp = spotipy.Spotify(
 )
 
 
-# (2) User型を定義する
-@strawberry.type
-class User:
-    name: str
-    age: int
-
-
-@strawberry.type
-class Song:
-    song_name: str
-    category : List[str]
-
-
-@strawberry.type
-class Room:
-    room_id: int
-    user_id: List[int]
-    name: str
-    
-
-@strawberry.type
-class RegisterComplete:
-    user_id : int
-    category : List[str]
-
-
-@strawberry.input
-class CreateRoom:
-    user_id: int
-    room_name: str
-
-
-@strawberry.input
-class JoinRoom:
-    user_id: int
-    room_id: int
-    
-@strawberry.input
-class Register:
-    user_id : int
-    category : List[str]
-
-
-    
+results = sp.search(q="ひげだん", limit=10, market='JP', type="track")
+for track in results['tracks']['items']:
+    name = track['name']
+    track_id = track['id']
+    track_info = sp.audio_features(track_id)
+    bpm = track_info[0]['tempo']
+    print(f'{name} : {bpm}')

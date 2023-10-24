@@ -11,6 +11,7 @@ input JoinRoom {
 type Mutation {
   createRoom(room: CreateRoom!): Room!
   joinRoom(join: JoinRoom!): Room!
+  updateCaategory(update: UpdateCategories!): RegisterComplete!
   register(regist: Register!): RegisterComplete!
 }
 
@@ -42,5 +43,10 @@ type Room {
 
 type Song {
   songName: String!
+  categories: [String!]!
+}
+
+input UpdateCategories {
+  userId: Int!
   categories: [String!]!
 }
