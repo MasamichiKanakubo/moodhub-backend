@@ -23,9 +23,19 @@ from schemas import (
 )
 import asyncio
 import aiohttp
+import redis
 
-# github確認
 load_dotenv()
+
+r = redis.Redis(
+  host=os.getenv('REDIS_HOST'),
+  port=os.getenv('REDIS_PORT'),
+  password=os.getenv('REDIS_PASSWORD'),
+  ssl=True
+)
+
+# r.set('foo', 'bar')
+# print(r.get('foo'))
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
