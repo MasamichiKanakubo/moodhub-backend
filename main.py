@@ -65,7 +65,8 @@ class Query:
 
         for category_name in menber_categories_list:
             results = sp.search(q=category_name, limit=3, market="JP", type="playlist")
-
+            # 同じプレイリストIDはskipする
+            # グローバル変数にプレイリストIDごとに検索結果を保存しておいて、2回目以降ば変数からデータを取得する
             for playlist in results["playlists"]["items"]:
                 playlisturl = str(playlist["href"]).split("/")
                 # URLの最後の要素が欲しいので分割
