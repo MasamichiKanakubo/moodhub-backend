@@ -10,17 +10,8 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (
-    Song,
-    Room,
-    RegisterComplete,
-    CreateRoom,
-    JoinRoom,
-    Register,
-    UpdateCategories,
-    GetRoomMembers,
-    RoomMembers
-)
+from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories,
+    GetRoomMembers, RoomMembers)
 import asyncio
 import aiohttp
 import redis
