@@ -2,7 +2,7 @@
 [![My Skills](https://skillicons.dev/icons?i=python,fastapi,redis,mongodb,graphql,ts,react,next,vercel)](https://skillicons.dev)
 
 ## moodhub-url
-This is the MoodHub backend repository
+This is the MoodHub backend repository.
 API URL: https://mood-hub-v2.onrender.com
 
 ## Introduciton
