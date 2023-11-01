@@ -5,7 +5,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 import strawberry
-from fastapi import FastAPI, BackgroundTasks, Depends
+from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
