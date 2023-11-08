@@ -5,27 +5,28 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 import strawberry
-from fastapi import FastAPI, BackgroundTasks, Depends
+from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (
-    Song,
-    Room,
-    RegisterComplete,
-    CreateRoom,
-    JoinRoom,
-    Register,
-    UpdateCategories,
-    GetRoomMembers,
-    RoomMembers
-)
+from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories,
+    GetRoomMembers, RoomMembers)
 import asyncio
 import aiohttp
+import redis
 
-# github確認
 load_dotenv()
+
+# r = redis.Redis(
+#   host=os.getenv('REDIS_HOST'),
+#   port=os.getenv('REDIS_PORT'),
+#   password=os.getenv('REDIS_PASSWORD'),
+#   ssl=True
+# )
+
+# r.set('foo', 'bar')
+# print(r.get('foo'))
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
@@ -65,7 +66,8 @@ class Query:
 
         for category_name in menber_categories_list:
             results = sp.search(q=category_name, limit=3, market="JP", type="playlist")
-
+            # 同じプレイリストIDはskipする
+            # グローバル変数にプレイリストIDごとに検索結果を保存しておいて、2回目以降ば変数からデータを取得する
             for playlist in results["playlists"]["items"]:
                 playlisturl = str(playlist["href"]).split("/")
                 # URLの最後の要素が欲しいので分割
