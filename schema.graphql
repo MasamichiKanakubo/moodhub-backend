@@ -15,7 +15,7 @@ input JoinRoom {
 type Mutation {
   createRoom(room: CreateRoom!): Room!
   joinRoom(join: JoinRoom!): Room!
-  updateCaategory(update: UpdateCategories!): RegisterComplete!
+  updateCategory(update: UpdateCategories!): RegisterComplete!
   register(regist: Register!): RegisterComplete!
   getMembers(members: GetRoomMembers!): RoomMembers!
 }
@@ -27,7 +27,7 @@ type Query {
 input Register {
   userId: Int!
   categories: [String!]!
-  userName: String!
+  userName: String = null
   gender: String = null
   age: Int = null
 }
@@ -35,7 +35,7 @@ input Register {
 type RegisterComplete {
   userId: Int!
   categories: [String!]!
-  userName: String!
+  userName: String
   gender: String
   age: Int
 }

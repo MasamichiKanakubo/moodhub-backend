@@ -25,7 +25,7 @@ class RoomMembers:
 class RegisterComplete:
     user_id : int
     categories : List[str]
-    user_name : str
+    user_name : Optional[str] = None
     gender : Optional[str] = None
     age : Optional[int] = None
 
@@ -45,7 +45,7 @@ class JoinRoom:
 class Register:
     user_id : int
     categories : List[str]
-    user_name : str
+    user_name : Optional[str] = None
     gender : Optional[str] = None
     age : Optional[int] = None
     

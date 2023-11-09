@@ -124,7 +124,7 @@ class Mutation:
         return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
 
     @strawberry.field
-    def update_caategory(self, update: UpdateCategories) -> RegisterComplete:
+    def update_category(self, update: UpdateCategories) -> RegisterComplete:
         collection_user.update_one(
             {"user_id": update.user_id},
             {"$push": {"categories": {"$each": update.categories}}},
