@@ -14,6 +14,10 @@ We use spotify API for track search.
 https://developer.spotify.com/documentation/web-api
 
 ## Quick Start
+### Project Environment
+- Windows11
+- python 3.11.3
+- WSL2
 
 ### clone to your local repository
 ```
@@ -25,7 +29,8 @@ git clone https://github.com/MasamichiKanakubo/moodhub-backend.git
 pip install -r requirements.txt
 ```
 
-### Project Environment
-- Windows11
-- python 3.11.3
-- WSL2
+### setup the database
+connet the MongoDB Atlas to your own app
+https://www.mongodb.com/ja-jp/atlas/database
+
+
