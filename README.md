@@ -33,4 +33,8 @@ pip install -r requirements.txt
 connet the MongoDB Atlas to your own app
 https://www.mongodb.com/ja-jp/atlas/database
 
-
+### start the app
+```
+uvicorn main:app --reload
+```
+Your app will be started with this code
