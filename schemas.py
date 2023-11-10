@@ -55,6 +55,3 @@ class UpdateCategories:
     categories: List[str]
     
     
-@strawberry.input
-class GetRoomMembers:
-    room_id: int

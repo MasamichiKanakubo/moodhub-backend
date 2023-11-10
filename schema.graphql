@@ -3,10 +3,6 @@ input CreateRoom {
   roomName: String!
 }
 
-input GetRoomMembers {
-  roomId: Int!
-}
-
 input JoinRoom {
   userId: Int!
   roomId: Int!
@@ -17,11 +13,11 @@ type Mutation {
   joinRoom(join: JoinRoom!): Room!
   updateCategory(update: UpdateCategories!): RegisterComplete!
   register(regist: Register!): RegisterComplete!
-  getMembers(members: GetRoomMembers!): RoomMembers!
 }
 
 type Query {
   song(roomId: Int!): [Song!]!
+  getMembers(roomId: Int!): RoomMembers!
 }
 
 input Register {
