@@ -98,8 +98,18 @@ class Query:
             user = collection_user.find_one(filter={'user_id': user_id})
             user_name = user['user_name']
             user_names.append(user_name)
-        return RoomMembers(room_name=room['name'], members=user_names)       
-
+        return RoomMembers(room_name=room['name'], members=user_names)  
+    
+    @strawberry.field
+    def get_user_info(self, user_id: int) -> RegisterComplete:
+        try:
+            user = collection_user.find_one(filter={'user_id': user_id})
+            user_name = user['user_name']
+            user_categories = user['categories']     
+            return RegisterComplete(user_id=user_id, user_name=user_name, categories=user_categories)
+        except TypeError:
+            return Exception('エラー')
+    
 
 
 async def schedule_room_deletion(room_id):
