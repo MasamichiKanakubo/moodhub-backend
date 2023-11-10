@@ -15,9 +15,8 @@ https://developer.spotify.com/documentation/web-api
 
 ## Quick Start
 
-```py:main.py
-
-
+```
+git clone
 
 ```
 
