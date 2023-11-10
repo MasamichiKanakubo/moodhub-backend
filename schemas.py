@@ -54,4 +54,3 @@ class UpdateCategories:
     user_id: int
     categories: List[str]
     
-    
