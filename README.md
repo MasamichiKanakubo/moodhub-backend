@@ -15,8 +15,17 @@ https://developer.spotify.com/documentation/web-api
 
 ## Quick Start
 
+### clone to your local repository
 ```
-git clone
-
+git clone https://github.com/MasamichiKanakubo/moodhub-backend.git
 ```
 
+### install what u nedd to 
+```
+pip install -r requirements.txt
+```
+
+### Project Environment
+- Windows11
+- python 3.11.3
+- WSL2
