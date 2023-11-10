@@ -18,6 +18,7 @@ type Mutation {
 type Query {
   song(roomId: Int!): [Song!]!
   getMembers(roomId: Int!): RoomMembers!
+  getUserInfo(userId: Int!): RegisterComplete!
 }
 
 input Register {
