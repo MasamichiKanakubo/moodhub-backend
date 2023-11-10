@@ -157,7 +157,7 @@ class Mutation:
     def update_category(self, update: UpdateCategories) -> RegisterComplete:
         collection_user.update_one(
             {"user_id": update.user_id},
-            {"$push": {"categories": {"$each": update.categories}}},
+            {"$set": {"categories": update.categories}},
         )
         user = collection_user.find_one(filter={"user_id": update.user_id})
         return RegisterComplete(
