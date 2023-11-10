@@ -10,7 +10,16 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers)
+from schemas import (
+    Song,
+    Room,
+    RegisterComplete,
+    CreateRoom,
+    JoinRoom,
+    Register,
+    UpdateCategories,
+    RoomMembers,
+)
 import asyncio
 import aiohttp
 import redis
@@ -87,29 +96,30 @@ class Query:
         sliced_song = songs[:30]
 
         return sliced_song
-    
+
     @strawberry.field
     def get_members(self, room_id: int) -> RoomMembers:
-        room = collection_room.find_one(filter={'room_id':room_id})
-        user_ids = room['user_id']
-        
+        room = collection_room.find_one(filter={"room_id": room_id})
+        user_ids = room["user_id"]
+
         user_names = []
         for user_id in user_ids:
-            user = collection_user.find_one(filter={'user_id': user_id})
-            user_name = user['user_name']
+            user = collection_user.find_one(filter={"user_id": user_id})
+            user_name = user["user_name"]
             user_names.append(user_name)
-        return RoomMembers(room_name=room['name'], members=user_names)  
-    
+        return RoomMembers(room_name=room["name"], members=user_names)
+
     @strawberry.field
     def get_user_info(self, user_id: int) -> RegisterComplete:
         try:
-            user = collection_user.find_one(filter={'user_id': user_id})
-            user_name = user['user_name']
-            user_categories = user['categories']     
-            return RegisterComplete(user_id=user_id, user_name=user_name, categories=user_categories)
+            user = collection_user.find_one(filter={"user_id": user_id})
+            user_name = user["user_name"]
+            user_categories = user["categories"]
+            return RegisterComplete(
+                user_id=user_id, user_name=user_name, categories=user_categories
+            )
         except TypeError:
-            return Exception('エラー')
-    
+            return Exception("エラー")
 
 
 async def schedule_room_deletion(room_id):
@@ -138,9 +148,15 @@ class Mutation:
 
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
+        existing_user = collection_room.find_one(
+            {"room_id": join.room_id, "user_id": {"$elemMatch": {"$eq": join.user_id}}}
+        )
+        
+        if existing_user:
+            raise ValueError('You are already in the room')
+
         collection_room.update_one(
-            {"room_id": join.room_id},
-            {"$push": {"user_id": join.user_id}}
+            {"room_id": join.room_id}, {"$push": {"user_id": join.user_id}}
         )
         room = collection_room.find_one(filter={"room_id": join.room_id})
         return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
@@ -163,7 +179,7 @@ class Mutation:
         collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
-    
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
