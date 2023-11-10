@@ -10,8 +10,7 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories,
-    GetRoomMembers, RoomMembers)
+from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers)
 import asyncio
 import aiohttp
 import redis
@@ -88,6 +87,19 @@ class Query:
         sliced_song = songs[:30]
 
         return sliced_song
+    
+    @strawberry.field
+    def get_members(self, room_id: int) -> RoomMembers:
+        room = collection_room.find_one(filter={'room_id':room_id})
+        user_ids = room['user_id']
+        
+        user_names = []
+        for user_id in user_ids:
+            user = collection_user.find_one(filter={'user_id': user_id})
+            user_name = user['user_name']
+            user_names.append(user_name)
+        return RoomMembers(room_name=room['name'], members=user_names)       
+
 
 
 async def schedule_room_deletion(room_id):
@@ -142,18 +154,6 @@ class Mutation:
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
     
-    @strawberry.field
-    def get_members(self, members: GetRoomMembers) -> RoomMembers:
-        room = collection_room.find_one(filter={'room_id':members.room_id})
-        user_ids = room['user_id']
-        
-        user_names = []
-        for user_id in user_ids:
-            user = collection_user.find_one(filter={'user_id': user_id})
-            user_name = user['user_name']
-            user_names.append(user_name)
-        return RoomMembers(room_name=room['name'], members=user_names)       
-
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
