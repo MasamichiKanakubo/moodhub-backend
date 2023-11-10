@@ -13,3 +13,11 @@ We can provide you with a comfortable musical life.
 We use spotify API for track search.
 https://developer.spotify.com/documentation/web-api
 
+## Quick Start
+
+```py:main.py
+
+
+
+```
+
