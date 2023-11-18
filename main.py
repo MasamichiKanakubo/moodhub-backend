@@ -10,14 +10,14 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers)
+from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
 import aiohttp
 import redis
 
 load_dotenv()
 
-r = redis.Redis(
+redis_client = redis.Redis(
   host=os.getenv('REDIS_HOST'),
   port=os.getenv('REDIS_PORT'),
   password=os.getenv('REDIS_PASSWORD'),
@@ -61,7 +61,7 @@ class Query:
         song_categories = defaultdict(set)
 
         for category_name in menber_categories_list:
-            results = sp.search(q=category_name, limit=3, market="JP", type="playlist")
+            results = sp.search(q=category_name, limit=2, market="JP", type="playlist")
             # 同じプレイリストIDはskipする
             # グローバル変数にプレイリストIDごとに検索結果を保存しておいて、2回目以降ば変数からデータを取得する
             for playlist in results["playlists"]["items"]:
@@ -179,6 +179,18 @@ class Mutation:
         collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
+    
+    @strawberry.field
+    def update_username(self, update: UpdateUserName) -> RegisterComplete:
+        user = collection_user.find_one(filter={'user_id': update.user_id})
+        collection_user.update_one(
+            {'user_id': update.user_id},
+            {'$set': {'user_name': update.user_name}},
+        )
+        return RegisterComplete(
+            user_id=user['user_id'],
+            user_name=user['user_name']
+        )
     
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

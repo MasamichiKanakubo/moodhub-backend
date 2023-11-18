@@ -54,3 +54,8 @@ class UpdateCategories:
     user_id: int
     categories: List[str]
     
+@strawberry.input
+class UpdateUserName:
+    user_id: int
+    user_name: Optional[str] = None
+    
