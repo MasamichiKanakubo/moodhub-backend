@@ -13,6 +13,7 @@ type Mutation {
   joinRoom(join: JoinRoom!): Room!
   updateCategory(update: UpdateCategories!): RegisterComplete!
   register(regist: Register!): RegisterComplete!
+  updateUsername(update: UpdateUserName!): RegisterComplete!
 }
 
 type Query {
@@ -56,4 +57,9 @@ type Song {
 input UpdateCategories {
   userId: Int!
   categories: [String!]!
+}
+
+input UpdateUserName {
+  userId: Int!
+  userName: String = null
 }
