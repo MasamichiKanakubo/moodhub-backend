@@ -98,7 +98,7 @@ class Query:
         return RoomMembers(room_name=room["name"], members=user_names)
 
     @strawberry.field
-    def get_user_info(self, user_id: int) -> RegisterComplete:
+    def get_user_info(self, user_id: str) -> RegisterComplete:
         try:
             user = collection_user.find_one(filter={"user_id": user_id})
             user_name = user["user_name"]
