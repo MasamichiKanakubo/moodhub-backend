@@ -12,7 +12,7 @@ class Song:
 @strawberry.type
 class Room:
     room_id: int
-    user_id: List[int]
+    user_id: List[str]
     name: str
 
 
@@ -23,7 +23,7 @@ class RoomMembers:
 
 @strawberry.type
 class RegisterComplete:
-    user_id : int
+    user_id : str
     categories : List[str]
     user_name : Optional[str] = None
     gender : Optional[str] = None
@@ -32,18 +32,18 @@ class RegisterComplete:
 
 @strawberry.input
 class CreateRoom:
-    user_id: int
+    user_id: str
     room_name: str
 
 
 @strawberry.input
 class JoinRoom:
-    user_id: int
+    user_id: str
     room_id: int
     
 @strawberry.input
 class Register:
-    user_id : int
+    user_id : str
     categories : List[str]
     user_name : Optional[str] = None
     gender : Optional[str] = None
@@ -51,11 +51,11 @@ class Register:
     
 @strawberry.input
 class UpdateCategories:
-    user_id: int
+    user_id: str
     categories: List[str]
     
 @strawberry.input
 class UpdateUserName:
-    user_id: int
+    user_id: str
     user_name: Optional[str] = None
     
