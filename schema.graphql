@@ -1,10 +1,10 @@
 input CreateRoom {
-  userId: Int!
+  userId: String!
   roomName: String!
 }
 
 input JoinRoom {
-  userId: Int!
+  userId: String!
   roomId: Int!
 }
 
@@ -19,11 +19,11 @@ type Mutation {
 type Query {
   song(roomId: Int!): [Song!]!
   getMembers(roomId: Int!): RoomMembers!
-  getUserInfo(userId: Int!): RegisterComplete!
+  getUserInfo(userId: String!): RegisterComplete!
 }
 
 input Register {
-  userId: Int!
+  userId: String!
   categories: [String!]!
   userName: String = null
   gender: String = null
@@ -31,7 +31,7 @@ input Register {
 }
 
 type RegisterComplete {
-  userId: Int!
+  userId: String!
   categories: [String!]!
   userName: String
   gender: String
@@ -40,7 +40,7 @@ type RegisterComplete {
 
 type Room {
   roomId: Int!
-  userId: [Int!]!
+  userId: [String!]!
   name: String!
 }
 
@@ -55,11 +55,11 @@ type Song {
 }
 
 input UpdateCategories {
-  userId: Int!
+  userId: String!
   categories: [String!]!
 }
 
 input UpdateUserName {
-  userId: Int!
+  userId: String!
   userName: String = null
 }
