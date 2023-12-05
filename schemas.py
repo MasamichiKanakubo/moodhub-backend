@@ -24,7 +24,7 @@ class RoomMembers:
 @strawberry.type
 class RegisterComplete:
     user_id : str
-    categories : List[int]
+    categories : List[str]
     user_name : Optional[str] = None
     gender : Optional[str] = None
     age : Optional[int] = None
