@@ -14,6 +14,7 @@ from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Registe
 import asyncio
 import aiohttp
 import redis
+from youtube_search import youtube_search
 
 load_dotenv()
 
