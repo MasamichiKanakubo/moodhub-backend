@@ -6,7 +6,6 @@ sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..')))
 from app.repositories.song_repository import SongRepository
 
-
 class TestSongRepository(unittest.TestCase):
 
     @patch('app.repositories.song_repository.spotipy.Spotify')

@@ -10,20 +10,27 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
+from schemas import (Song, Room, RegisterComplete, CreateRoom,
+                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
 import aiohttp
 import redis
-from app.graphql.queries.song_query import Query as SongQuery
+from app.repositories.mongo_repository import MongoRepository
+from app.use_cases.song_use_case import SongUseCase
+from app.repositories.song_repository import SongRepository
 
 load_dotenv()
 
 redis_client = redis.Redis(
-  host=os.getenv('REDIS_HOST'),
-  port=os.getenv('REDIS_PORT'),
-  password=os.getenv('REDIS_PASSWORD'),
-  ssl=True
+    host=os.getenv('REDIS_HOST'),
+    port=os.getenv('REDIS_PORT'),
+    password=os.getenv('REDIS_PASSWORD'),
+    ssl=True
 )
+# リポジトリのインスタンスを作成
+mongo_repo = MongoRepository(uri=os.environ["MONGO_URL"], db_name="RoomDB")
+song_repo = SongRepository(
+    client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
@@ -41,7 +48,13 @@ sp = spotipy.Spotify(
 
 
 @strawberry.type
-class Query(SongQuery):
+class Query:
+    @strawberry.field
+    def song(self, room_id: int) -> List[Song]:
+        song_use_case = SongUseCase(song_repo, mongo_repo)
+        categories = song_use_case.get_categories(room_id)
+        return song_use_case.search_songs(categories)
+
     @strawberry.field
     def get_members(self, room_id: int) -> RoomMembers:
         room = collection_room.find_one(filter={"room_id": room_id})
@@ -106,9 +119,10 @@ class Mutation:
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
         existing_user = collection_room.find_one(
-            {"room_id": join.room_id, "user_id": {"$elemMatch": {"$eq": join.user_id}}}
+            {"room_id": join.room_id, "user_id": {
+                "$elemMatch": {"$eq": join.user_id}}}
         )
-        
+
         if existing_user:
             raise ValueError('You are already in the room')
 
@@ -136,7 +150,7 @@ class Mutation:
         collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
-    
+
     @strawberry.field
     def update_username(self, update: UpdateUserName) -> RegisterComplete:
         user = collection_user.find_one(filter={'user_id': update.user_id})
@@ -148,7 +162,7 @@ class Mutation:
             user_id=user['user_id'],
             user_name=user['user_name']
         )
-    
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
