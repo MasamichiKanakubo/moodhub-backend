@@ -52,6 +52,7 @@ type RoomMembers {
 type Song {
   songName: String!
   categories: [String!]!
+  youtubeUrl: String!
 }
 
 input UpdateCategories {

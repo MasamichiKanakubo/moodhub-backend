@@ -13,7 +13,7 @@ class SongRepository:
     
     def get_spotify_playlist(self, category: str):
         # Spotify APIを使用してプレイリストを取得
-        return self.sp.search(q=category_name, limit=2, market="JP", type="playlist")
+        return self.sp.search(q=category, limit=2, market="JP", type="playlist")
     
     def get_spotify_playlist_tracks(self, playlist_id: str):
         # Spotify APIを使用してプレイリストの曲を取得
@@ -21,7 +21,7 @@ class SongRepository:
 
     def get_youtube_url(self, song_name: str) -> Union[str, dict]:
         # YouTube APIを使用してクエリに基づくURLを取得
-        videosSearch = VideosSearch(query, limit = 20)
+        videosSearch = VideosSearch(song_name, limit = 20)
         results = videosSearch.result()
         # 結果をVideoエンティティに変換（省略）
         return results
