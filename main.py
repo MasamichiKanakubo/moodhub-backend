@@ -10,11 +10,11 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
+from schemas import (Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
 import aiohttp
 import redis
-from youtube_search import youtube_search
+from app.graphql.queries.song_query import Query as SongQuery
 
 load_dotenv()
 
@@ -41,51 +41,7 @@ sp = spotipy.Spotify(
 
 
 @strawberry.type
-class Query:
-    @strawberry.field
-    def song(self, room_id: int) -> List[Song]:
-        room = collection_room.find_one({"room_id": room_id})
-        # print(room)
-        menber_categories_list = []
-
-        user_ids = room["user_id"]
-
-        for user_id in user_ids:
-            try:
-                user = collection_user.find_one({"user_id": user_id})
-                categories = user["categories"]
-            except TypeError:
-                continue
-            for category in categories:
-                menber_categories_list.append(category)
-
-        song_categories = defaultdict(set)
-
-        for category_name in menber_categories_list:
-            results = sp.search(q=category_name, limit=2, market="JP", type="playlist")
-            # 同じプレイリストIDはskipする
-            # グローバル変数にプレイリストIDごとに検索結果を保存しておいて、2回目以降ば変数からデータを取得する
-            for playlist in results["playlists"]["items"]:
-                playlisturl = str(playlist["href"]).split("/")
-                # URLの最後の要素が欲しいので分割
-                playlistID = playlisturl[len(playlisturl) - 1]
-                # URLの最後の部分がプレイリストID
-                playListTrack = sp.playlist(playlist_id=playlistID, market="JP")
-
-                for track in playListTrack["tracks"]["items"]:
-                    name = track["track"]["name"]
-                    song_categories[name].add(category_name)
-
-        songs = [
-            Song(song_name=name, categories=list(song_categories[name]))
-            for name in song_categories.keys()
-        ]
-
-        songs.sort(key=lambda x: len(x.categories), reverse=True)
-        sliced_song = songs[:30]
-
-        return sliced_song
-
+class Query(SongQuery):
     @strawberry.field
     def get_members(self, room_id: int) -> RoomMembers:
         room = collection_room.find_one(filter={"room_id": room_id})

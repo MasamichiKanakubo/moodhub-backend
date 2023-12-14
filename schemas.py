@@ -4,12 +4,6 @@ from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 
 @strawberry.type
-class Song:
-    song_name: str
-    categories : List[str]
-
-
-@strawberry.type
 class Room:
     room_id: int
     user_id: List[str]
