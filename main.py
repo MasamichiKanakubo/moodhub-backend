@@ -10,19 +10,27 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from collections import defaultdict
-from schemas import (Song, Room, RegisterComplete, CreateRoom, JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
+from schemas import (Song, Room, RegisterComplete, CreateRoom,
+                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
 import aiohttp
 import redis
+from app.repositories.mongo_repository import MongoRepository
+from app.use_cases.song_use_case import SongUseCase
+from app.repositories.song_repository import SongRepository
 
 load_dotenv()
 
 redis_client = redis.Redis(
-  host=os.getenv('REDIS_HOST'),
-  port=os.getenv('REDIS_PORT'),
-  password=os.getenv('REDIS_PASSWORD'),
-  ssl=True
+    host=os.getenv('REDIS_HOST'),
+    port=os.getenv('REDIS_PORT'),
+    password=os.getenv('REDIS_PASSWORD'),
+    ssl=True
 )
+# リポジトリのインスタンスを作成
+mongo_repo = MongoRepository(uri=os.environ["MONGO_URL"], db_name="RoomDB")
+song_repo = SongRepository(
+    client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
 
 client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
@@ -43,47 +51,9 @@ sp = spotipy.Spotify(
 class Query:
     @strawberry.field
     def song(self, room_id: int) -> List[Song]:
-        room = collection_room.find_one({"room_id": room_id})
-        # print(room)
-        menber_categories_list = []
-
-        user_ids = room["user_id"]
-
-        for user_id in user_ids:
-            try:
-                user = collection_user.find_one({"user_id": user_id})
-                categories = user["categories"]
-            except TypeError:
-                continue
-            for category in categories:
-                menber_categories_list.append(category)
-
-        song_categories = defaultdict(set)
-
-        for category_name in menber_categories_list:
-            results = sp.search(q=category_name, limit=2, market="JP", type="playlist")
-            # 同じプレイリストIDはskipする
-            # グローバル変数にプレイリストIDごとに検索結果を保存しておいて、2回目以降ば変数からデータを取得する
-            for playlist in results["playlists"]["items"]:
-                playlisturl = str(playlist["href"]).split("/")
-                # URLの最後の要素が欲しいので分割
-                playlistID = playlisturl[len(playlisturl) - 1]
-                # URLの最後の部分がプレイリストID
-                playListTrack = sp.playlist(playlist_id=playlistID, market="JP")
-
-                for track in playListTrack["tracks"]["items"]:
-                    name = track["track"]["name"]
-                    song_categories[name].add(category_name)
-
-        songs = [
-            Song(song_name=name, categories=list(song_categories[name]))
-            for name in song_categories.keys()
-        ]
-
-        songs.sort(key=lambda x: len(x.categories), reverse=True)
-        sliced_song = songs[:30]
-
-        return sliced_song
+        song_use_case = SongUseCase(song_repo, mongo_repo)
+        categories = song_use_case.get_categories(room_id)
+        return song_use_case.search_songs(categories)
 
     @strawberry.field
     def get_members(self, room_id: int) -> RoomMembers:
@@ -149,9 +119,10 @@ class Mutation:
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
         existing_user = collection_room.find_one(
-            {"room_id": join.room_id, "user_id": {"$elemMatch": {"$eq": join.user_id}}}
+            {"room_id": join.room_id, "user_id": {
+                "$elemMatch": {"$eq": join.user_id}}}
         )
-        
+
         if existing_user:
             raise ValueError('You are already in the room')
 
@@ -179,7 +150,7 @@ class Mutation:
         collection_user.insert_one(regist.__dict__)
         asyncio.create_task(schedule_user_deletion(regist.user_id))
         return regist
-    
+
     @strawberry.field
     def update_username(self, update: UpdateUserName) -> RegisterComplete:
         user = collection_user.find_one(filter={'user_id': update.user_id})
@@ -191,7 +162,7 @@ class Mutation:
             user_id=user['user_id'],
             user_name=user['user_name']
         )
-    
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
