@@ -28,6 +28,7 @@ class SongUseCase:
         return member_categories_list
 
     def search_songs(self, song_categories: List[str]) -> List[Song]:
+        song_data = {}
         for song_category in song_categories:
             results = self.song_repository.get_spotify_playlist(song_category)
             # Spotifyからプレイリストを取得
@@ -41,19 +42,17 @@ class SongUseCase:
                 playListTrack = self.song_repository.get_spotify_playlist_tracks(playlist_id)
                 for track in playListTrack["tracks"]["items"]:
                     name = track["track"]["name"]
-                    self.song_categories[name].add(song_category)
+                    track_id = track["track"]["id"]
+
+                    if name not in song_data:
+                        song_data[name] = {"categories": set(), "track_id": track_id}
+                    
+                    song_data[name]["categories"].add(song_category)
         songs = [
-            Song(song_name=name, categories=list(self.song_categories[name]), youtube_url=None)
-            for name in self.song_categories.keys()
+            Song(song_name=name, categories=list(info["categories"]), track_id=info["track_id"])
+            for name, info in song_data.items()
         ]
         songs.sort(key=lambda x: len(x.categories), reverse=True)
         sliced_songs = songs[:30]
-        song_names = [song.song_name for song in sliced_songs]
-        # ThreadPoolExecutorを使用してYouTube URLを非同期で取得
-        with ThreadPoolExecutor() as executor:
-            youtube_response = list(executor.map(
-                self.song_repository.get_youtube_url, song_names))
-        # 各曲にYouTube URLを設定
-        for song, response in zip(sliced_songs, youtube_response):
-            song.youtube_url = response["result"][0]["link"]
+        
         return sliced_songs
