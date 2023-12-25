@@ -7,7 +7,7 @@ from strawberry.asgi import GraphQL
 class Song:
     song_name: str
     categories: List[str]
-    youtube_url: str
+    track_id: str
 
 @strawberry.type
 class Room:
