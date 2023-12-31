@@ -18,24 +18,26 @@ type Mutation {
 
 type Query {
   song(roomId: Int!): [Song!]!
-  getMembers(roomId: Int!): RoomMembers!
   getUserInfo(userId: String!): RegisterComplete!
+  getMembers(roomId: Int!): RoomMembers!
 }
 
 input Register {
   userId: String!
-  categories: [String!]!
+  categories: [String!] = null
   userName: String = null
   gender: String = null
   age: Int = null
+  avatarUrl: String = null
 }
 
 type RegisterComplete {
   userId: String!
-  categories: [String!]!
+  categories: [String!]
   userName: String
   gender: String
   age: Int
+  avatarUrl: String
 }
 
 type Room {
@@ -46,7 +48,7 @@ type Room {
 
 type RoomMembers {
   roomName: String!
-  members: [String!]!
+  membersDict: [UserDict!]!
 }
 
 type Song {
@@ -63,4 +65,9 @@ input UpdateCategories {
 input UpdateUserName {
   userId: String!
   userName: String = null
+}
+
+type UserDict {
+  userName: String!
+  avatarUrl: String
 }
