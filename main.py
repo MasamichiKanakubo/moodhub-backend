@@ -9,9 +9,8 @@ from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
-from collections import defaultdict
 from schemas import (Song, Room, RegisterComplete, CreateRoom,
-                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
+                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict)
 import asyncio
 import aiohttp
 import redis
@@ -54,27 +53,16 @@ class Query:
         song_use_case = SongUseCase(song_repo, mongo_repo)
         categories = song_use_case.get_categories(room_id)
         return song_use_case.search_songs(categories)
-
-    @strawberry.field
-    def get_members(self, room_id: int) -> RoomMembers:
-        room = collection_room.find_one(filter={"room_id": room_id})
-        user_ids = room["user_id"]
-
-        user_names = []
-        for user_id in user_ids:
-            user = collection_user.find_one(filter={"user_id": user_id})
-            user_name = user["user_name"]
-            user_names.append(user_name)
-        return RoomMembers(room_name=room["name"], members=user_names)
-
+    
     @strawberry.field
     def get_user_info(self, user_id: str) -> RegisterComplete:
         try:
             user = collection_user.find_one(filter={"user_id": user_id})
             user_name = user["user_name"]
             user_categories = user["categories"]
+            avatar_url = user["avatar_url"]
             return RegisterComplete(
-                user_id=user_id, user_name=user_name, categories=user_categories
+                user_id=user_id, user_name=user_name, categories=user_categories, avatar_url=avatar_url
             )
         except TypeError:
             return Exception("エラー")
@@ -84,12 +72,14 @@ class Query:
         room = collection_room.find_one(filter={"room_id": room_id})
         user_ids = room["user_id"]
 
-        user_names = []
+        members_list = []
         for user_id in user_ids:
             user = collection_user.find_one(filter={"user_id": user_id})
             user_name = user["user_name"]
-            user_names.append(user_name)
-        return RoomMembers(room_name=room["name"], members=user_names)
+            avatar_url = user["avatar_url"]
+            user_dict = UserDict(user_name=user_name, avatar_url=avatar_url)
+            members_list.append(user_dict)
+        return RoomMembers(room_name=room["name"], members_dict=members_list)
 
 
 async def schedule_room_deletion(room_id):
