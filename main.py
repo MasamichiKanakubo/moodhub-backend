@@ -13,19 +13,12 @@ from schemas import (Song, Room, RegisterComplete, CreateRoom,
                      JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict)
 import asyncio
 import aiohttp
-import redis
 from app.repositories.mongo_repository import MongoRepository
 from app.use_cases.song_use_case import SongUseCase
 from app.repositories.song_repository import SongRepository
 
 load_dotenv()
 
-redis_client = redis.Redis(
-    host=os.getenv('REDIS_HOST'),
-    port=os.getenv('REDIS_PORT'),
-    password=os.getenv('REDIS_PASSWORD'),
-    ssl=True
-)
 # リポジトリのインスタンスを作成
 mongo_repo = MongoRepository(uri=os.environ["MONGO_URL"], db_name="RoomDB")
 song_repo = SongRepository(
