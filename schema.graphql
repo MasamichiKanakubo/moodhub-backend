@@ -68,6 +68,6 @@ input UpdateUserName {
 }
 
 type UserDict {
-  userName: String!
+  userId: String!
   avatarUrl: String
 }
