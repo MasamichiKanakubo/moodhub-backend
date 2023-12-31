@@ -19,7 +19,7 @@ class Login:
     
 @strawberry.type
 class UserDict:
-    user_name: str
+    user_id: str
     avatar_url: Optional[str] = None
     
 @strawberry.type

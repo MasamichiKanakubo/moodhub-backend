@@ -75,9 +75,9 @@ class Query:
         members_list = []
         for user_id in user_ids:
             user = collection_user.find_one(filter={"user_id": user_id})
-            user_name = user["user_name"]
+            user_id = user["user_id"]
             avatar_url = user["avatar_url"]
-            user_dict = UserDict(user_name=user_name, avatar_url=avatar_url)
+            user_dict = UserDict(user_id=user_id, avatar_url=avatar_url)
             members_list.append(user_dict)
         return RoomMembers(room_name=room["name"], members_dict=members_list)
 
