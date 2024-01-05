@@ -10,7 +10,7 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from schemas import (Song, Room, RegisterComplete, CreateRoom,
-                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict, Login)
+                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict)
 import asyncio
 import aiohttp
 from app.repositories.mongo_repository import MongoRepository
