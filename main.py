@@ -1,5 +1,5 @@
 import os
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 from typing import List
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -10,7 +10,7 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from schemas import (Song, Room, RegisterComplete, CreateRoom,
-                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict)
+                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict, Login)
 import asyncio
 import aiohttp
 from app.repositories.mongo_repository import MongoRepository
@@ -126,14 +126,20 @@ class Mutation:
             user_id=user["user_id"],
             categories=user["categories"],
             user_name=user["user_name"],
+            avatar_url=user["avatar_url"]
         )
 
     @strawberry.field
     def register(self, regist: Register) -> RegisterComplete:
-        collection_user.insert_one(regist.__dict__)
-        asyncio.create_task(schedule_user_deletion(regist.user_id))
-        return regist
-
+        try:
+            collection_user.insert_one(regist.__dict__)
+            asyncio.create_task(schedule_user_deletion(regist.user_id))
+            return regist 
+        except errors.DuplicateKeyError:
+            raise Exception("You are already registered with MoodHub")
+        except Exception as e:
+            raise {"message": str(e)}
+        
     @strawberry.field
     def update_username(self, update: UpdateUserName) -> RegisterComplete:
         user = collection_user.find_one(filter={'user_id': update.user_id})
@@ -188,3 +194,4 @@ async def startup_event():
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+

@@ -38,6 +38,7 @@ type RegisterComplete {
   gender: String
   age: Int
   avatarUrl: String
+  message: String!
 }
 
 type Room {

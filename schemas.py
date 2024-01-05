@@ -14,10 +14,6 @@ class Room:
     name: str
     
 @strawberry.type
-class Login:
-    user_id: str
-    
-@strawberry.type
 class UserDict:
     user_id: str
     avatar_url: Optional[str] = None
@@ -36,6 +32,7 @@ class RegisterComplete:
     gender : Optional[str] = None
     age : Optional[int] = None
     avatar_url: Optional[str] = None
+    message: str
 
 
 @strawberry.input
