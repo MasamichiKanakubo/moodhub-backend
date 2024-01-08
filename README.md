@@ -25,9 +25,15 @@ https://developer.spotify.com/documentation/web-api
 git clone https://github.com/MasamichiKanakubo/moodhub-backend.git
 ```
 
-### install what u nedd to 
+### install what you nedd to 
 ```
 pip install -r requirements.txt
+```
+
+### create virtual environment and activate
+```
+python -m venv venv
+venv\Scripts\activate
 ```
 
 ### setup the database
