@@ -1,6 +1,6 @@
 ## MoodHub: the Track Search Engine
 ### Tech Stack
-[![My Skills](https://skillicons.dev/icons?i=python,fastapi,mongodb,graphql,ts,next,tailwind,firebase)](https://skillicons.dev)
+[![My Skills](https://skillicons.dev/icons?i=python,fastapi,mongodb,graphql)](https://skillicons.dev)
 
 ## moodhub-url
 This is the MoodHub backend repository.
