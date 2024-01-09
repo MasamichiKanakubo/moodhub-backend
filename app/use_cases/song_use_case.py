@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..')))
 from app.repositories.mongo_repository import MongoRepository
 from app.repositories.song_repository import SongRepository
-from schemas import Song
+from app.entities.schemas import Song
 from collections import defaultdict
 from typing import List
 
