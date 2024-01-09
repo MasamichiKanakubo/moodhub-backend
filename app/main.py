@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
-from schemas import (Song, Room, RegisterComplete, CreateRoom,
+from app.entities.schemas import (Song, Room, RegisterComplete, CreateRoom,
                      JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict)
 import asyncio
 import aiohttp
@@ -157,7 +157,7 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 sdl = str(schema)
 
-with open("schema.graphql", "w") as f:
+with open("app/interfaces/schema.graphql", "w") as f:
     f.write(sdl)
 
 graphql_app = GraphQL(schema)
