@@ -80,12 +80,6 @@ async def schedule_room_deletion(room_id):
     await asyncio.sleep(86400)
     collection_room.delete_one({"room_id": room_id})
 
-
-async def schedule_user_deletion(user_id):
-    await asyncio.sleep(86400)
-    collection_user.delete_one({"user_id": user_id})
-
-
 @strawberry.type
 class Mutation:
     @strawberry.field
@@ -133,7 +127,6 @@ class Mutation:
     def register(self, regist: Register) -> RegisterComplete:
         try:
             collection_user.insert_one(regist.__dict__)
-            asyncio.create_task(schedule_user_deletion(regist.user_id))
             return regist 
         except errors.DuplicateKeyError:
             raise Exception("You are already registered with MoodHub")
