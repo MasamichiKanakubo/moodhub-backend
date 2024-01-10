@@ -22,14 +22,14 @@ from app.use_cases.room_use_case import RoomUseCase
 load_dotenv()
 
 # リポジトリのインスタンスを作成
-mongo_repo = MongoRepository(uri="mongodb+srv://masamichi:Masa0929@cluster0.it1iwfw.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp", db_name="RoomDB")
+mongo_repo = MongoRepository(uri=os.environ["MONGO_URL"], db_name="RoomDB")
 song_repo = SongRepository(
     client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
 
 user_data_use_case = UserDataUseCase(mongo_repo)
 room_use_case = RoomUseCase(mongo_repo)
 
-client = MongoClient("mongodb+srv://masamichi:Masa0929@cluster0.it1iwfw.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp")
+client = MongoClient(os.environ["MONGO_URL"])
 db = client["RoomDB"]
 collection_room = db["RoomTable"]
 collection_user = db["UserTable"]
