@@ -1,8 +1,5 @@
 import os
-from pymongo import MongoClient
 from typing import List
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 import strawberry
 from fastapi import FastAPI
@@ -10,7 +7,7 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from app.entities.schemas import (Song, Room, RegisterComplete, CreateRoom,
-                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
+                                  JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
 import aiohttp
 from app.repositories.mongo_repository import MongoRepository
