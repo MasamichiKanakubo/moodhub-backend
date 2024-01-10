@@ -1,5 +1,5 @@
 import os
-from pymongo import MongoClient, errors
+from pymongo import MongoClient
 from typing import List
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -22,26 +22,12 @@ from app.use_cases.room_use_case import RoomUseCase
 load_dotenv()
 
 # リポジトリのインスタンスを作成
-mongo_repo = MongoRepository(uri=os.environ["MONGO_URL"], db_name="RoomDB")
-song_repo = SongRepository(
-    client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
+mongo_repo = MongoRepository(uri=os.environ.get("MONGO_URI"), db_name="RoomDB")
+song_repo = SongRepository(client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
 
+# ユースケースのインスタンスを作成
 user_data_use_case = UserDataUseCase(mongo_repo)
 room_use_case = RoomUseCase(mongo_repo)
-
-client = MongoClient(os.environ["MONGO_URL"])
-db = client["RoomDB"]
-collection_room = db["RoomTable"]
-collection_user = db["UserTable"]
-
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
-
-sp = spotipy.Spotify(
-    auth_manager=SpotifyClientCredentials(
-        client_id=client_id, client_secret=client_secret
-    )
-)
 
 @strawberry.type
 class Query:
@@ -63,15 +49,8 @@ class Query:
 class Mutation:
     @strawberry.field
     def create_room(self, room: CreateRoom) -> Room:
-        new_room = Room(
-            room_id=random.randint(1, 100000),
-            user_id=[room.user_id],
-            name=room.room_name,
-        )
-        collection_room.insert_one(new_room.__dict__)
-        return new_room
+        return room_use_case.get_new_room(room)
         
-
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
         return room_use_case.add_members(join)
@@ -82,13 +61,7 @@ class Mutation:
         
     @strawberry.field
     def register(self, regist: Register) -> RegisterComplete:
-        try:
-            collection_user.insert_one(regist.__dict__)
-            return regist 
-        except errors.DuplicateKeyError:
-            raise Exception("You are already registered with MoodHub")
-        except Exception as e:
-            raise {"message": str(e)}
+        return user_data_use_case.sign_up(regist)
         
     @strawberry.field
     def update_username(self, update: UpdateUserName) -> RegisterComplete:

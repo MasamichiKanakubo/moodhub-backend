@@ -10,7 +10,6 @@ class RoomUseCase:
         room = self.mongo_repository.get_document(
             "RoomTable", {"room_id": join.room_id}
         )
-        print(room)
         if join.user_id in room["user_id"]:
             return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
         
@@ -23,3 +22,14 @@ class RoomUseCase:
             "RoomTable", {"room_id": join.room_id}
         )
         return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
+    
+    def get_new_room(self, room: CreateRoom) -> Room:
+        new_room = Room(
+            room_id=random.randint(1, 100000),
+            user_id=[room.user_id],
+            name=room.room_name
+        )
+        self.mongo_repository.insert_document(
+            "RoomTable", new_room.__dict__
+        )
+        return new_room

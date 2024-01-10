@@ -40,8 +40,9 @@ class UserDataUseCase:
     def sign_up(self, regist: Register) -> RegisterComplete:
         try:
             self.mongo_repository.insert_document(
-                "UserTable", regist
+                "UserTable", regist.__dict__
             )
+            return regist
         except errors.DuplicateKeyError:
             raise Exception('You are already registered with Moodhub')
         except Exception as e:
