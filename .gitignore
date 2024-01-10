@@ -3,7 +3,3 @@ __pycache__
 .env
 .cache
 .vscode/
-Dockerfile
-compose.yaml
-.dockerignore
-README.Docker.md

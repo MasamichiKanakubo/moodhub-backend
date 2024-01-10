@@ -19,9 +19,13 @@ class MongoRepository:
         collection = self.db[collection_name]
         return collection.insert_one(document).inserted_id
 
-    def update_document(self, collection_name: str, query: Dict[str, Any], update_values: Dict[str, Any]) -> None:
+    def set_document(self, collection_name: str, query: Dict[str, Any], update_values: Dict[str, Any]) -> None:
         collection = self.db[collection_name]
         collection.update_one(query, {'$set': update_values})
+        
+    def push_document(self, collection_name: str, query: Dict[str, Any], update_values: Dict[str, Any]) -> None:
+        collection = self.db[collection_name]
+        collection.update_one(query, {"$push": update_values})
 
     def delete_document(self, collection_name: str, query: Dict[str, Any]) -> None:
         collection = self.db[collection_name]

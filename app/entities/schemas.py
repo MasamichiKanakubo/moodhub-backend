@@ -21,7 +21,7 @@ class UserDict:
 @strawberry.type
 class RoomMembers:
     room_name: str
-    members_dict: List[UserDict]
+    members_info_list: List[UserDict]
     
 
 @strawberry.type
@@ -32,8 +32,6 @@ class RegisterComplete:
     gender : Optional[str] = None
     age : Optional[int] = None
     avatar_url: Optional[str] = None
-    message: str
-
 
 @strawberry.input
 class CreateRoom:

@@ -10,21 +10,26 @@ from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
 import random
 from app.entities.schemas import (Song, Room, RegisterComplete, CreateRoom,
-                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName, UserDict)
+                     JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
 import aiohttp
 from app.repositories.mongo_repository import MongoRepository
-from app.use_cases.song_use_case import SongUseCase
 from app.repositories.song_repository import SongRepository
+from app.use_cases.song_use_case import SongUseCase
+from app.use_cases.user_data_use_case import UserDataUseCase
+from app.use_cases.room_use_case import RoomUseCase
 
 load_dotenv()
 
 # リポジトリのインスタンスを作成
-mongo_repo = MongoRepository(uri=os.environ["MONGO_URL"], db_name="RoomDB")
+mongo_repo = MongoRepository(uri="mongodb+srv://masamichi:Masa0929@cluster0.it1iwfw.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp", db_name="RoomDB")
 song_repo = SongRepository(
     client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
 
-client = MongoClient(os.environ["MONGO_URL"])
+user_data_use_case = UserDataUseCase(mongo_repo)
+room_use_case = RoomUseCase(mongo_repo)
+
+client = MongoClient("mongodb+srv://masamichi:Masa0929@cluster0.it1iwfw.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp")
 db = client["RoomDB"]
 collection_room = db["RoomTable"]
 collection_user = db["UserTable"]
@@ -38,7 +43,6 @@ sp = spotipy.Spotify(
     )
 )
 
-
 @strawberry.type
 class Query:
     @strawberry.field
@@ -49,80 +53,33 @@ class Query:
     
     @strawberry.field
     def get_user_info(self, user_id: str) -> RegisterComplete:
-        try:
-            user = collection_user.find_one(filter={"user_id": user_id})
-            user_name = user["user_name"]
-            user_categories = user["categories"]
-            avatar_url = user["avatar_url"]
-            return RegisterComplete(
-                user_id=user_id, user_name=user_name, categories=user_categories, avatar_url=avatar_url
-            )
-        except TypeError:
-            return Exception("エラー")
+        return user_data_use_case.show_personal_info(user_id)
 
     @strawberry.field
     def get_members(self, room_id: int) -> RoomMembers:
-        room = collection_room.find_one(filter={"room_id": room_id})
-        user_ids = room["user_id"]
-
-        members_list = []
-        for user_id in user_ids:
-            user = collection_user.find_one(filter={"user_id": user_id})
-            user_id = user["user_id"]
-            avatar_url = user["avatar_url"]
-            user_dict = UserDict(user_id=user_id, avatar_url=avatar_url)
-            members_list.append(user_dict)
-        return RoomMembers(room_name=room["name"], members_dict=members_list)
-
-
-async def schedule_room_deletion(room_id):
-    # 24時間後にルームを削除
-    await asyncio.sleep(86400)
-    collection_room.delete_one({"room_id": room_id})
+        return user_data_use_case.show_room_members_info(room_id)
 
 @strawberry.type
 class Mutation:
     @strawberry.field
-    async def create_room(self, room: CreateRoom) -> Room:
+    def create_room(self, room: CreateRoom) -> Room:
         new_room = Room(
             room_id=random.randint(1, 100000),
             user_id=[room.user_id],
             name=room.room_name,
         )
         collection_room.insert_one(new_room.__dict__)
-        asyncio.create_task(schedule_room_deletion(new_room.room_id))
         return new_room
+        
 
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
-        existing_user = collection_room.find_one(
-            {"room_id": join.room_id, "user_id": {
-                "$elemMatch": {"$eq": join.user_id}}}
-        )
-
-        if existing_user:
-            raise ValueError('You are already in the room')
-
-        collection_room.update_one(
-            {"room_id": join.room_id}, {"$push": {"user_id": join.user_id}}
-        )
-        room = collection_room.find_one(filter={"room_id": join.room_id})
-        return Room(room_id=room["room_id"], user_id=room["user_id"], name=room["name"])
+        return room_use_case.add_members(join)
 
     @strawberry.field
     def update_category(self, update: UpdateCategories) -> RegisterComplete:
-        collection_user.update_one(
-            {"user_id": update.user_id},
-            {"$set": {"categories": update.categories}},
-        )
-        user = collection_user.find_one(filter={"user_id": update.user_id})
-        return RegisterComplete(
-            user_id=user["user_id"],
-            categories=user["categories"],
-            user_name=user["user_name"],
-            avatar_url=user["avatar_url"]
-        )
-
+        return user_data_use_case.set_new_categories(update)
+        
     @strawberry.field
     def register(self, regist: Register) -> RegisterComplete:
         try:
@@ -135,15 +92,7 @@ class Mutation:
         
     @strawberry.field
     def update_username(self, update: UpdateUserName) -> RegisterComplete:
-        user = collection_user.find_one(filter={'user_id': update.user_id})
-        collection_user.update_one(
-            {'user_id': update.user_id},
-            {'$set': {'user_name': update.user_name}},
-        )
-        return RegisterComplete(
-            user_id=user['user_id'],
-            user_name=user['user_name']
-        )
+        return user_data_use_case.set_new_username(update)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

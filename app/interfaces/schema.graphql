@@ -38,7 +38,6 @@ type RegisterComplete {
   gender: String
   age: Int
   avatarUrl: String
-  message: String!
 }
 
 type Room {
@@ -49,7 +48,7 @@ type Room {
 
 type RoomMembers {
   roomName: String!
-  membersDict: [UserDict!]!
+  membersInfoList: [UserDict!]!
 }
 
 type Song {
