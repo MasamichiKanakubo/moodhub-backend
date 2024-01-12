@@ -1,6 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
+# リポジトリ層は外部サービスやDBとの連携をする層とのことでここではSpotifyAPIとの連携する処理を記載
 class SongRepository:
     def __init__(self, client_id: str, client_secret: str):
         self.sp = spotipy.Spotify(

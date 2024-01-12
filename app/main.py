@@ -5,7 +5,6 @@ import strawberry
 from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
-import random
 from app.entities.schemas import (Song, Room, RegisterComplete, CreateRoom,
                                   JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
 import asyncio
@@ -28,6 +27,7 @@ room_use_case = RoomUseCase(mongo_repo)
 
 @strawberry.type
 class Query:
+    # mainはエントリーポイントだからロジック自体を別で行いリクエストに対するレスポンスだけを表示する意味で書いた
     @strawberry.field
     def song(self, room_id: int) -> List[Song]:
         song_use_case = SongUseCase(song_repo, mongo_repo)
@@ -44,6 +44,7 @@ class Query:
 
 @strawberry.type
 class Mutation:
+    # ロジックをとにかく書かないことを意識した。なんならここにMutationやQueryを書くこともおかしいんじゃないかという気もする
     @strawberry.field
     def create_room(self, room: CreateRoom) -> Room:
         return room_use_case.get_new_room(room)
@@ -51,15 +52,15 @@ class Mutation:
     @strawberry.field
     def join_room(self, join: JoinRoom) -> Room:
         return room_use_case.add_members(join)
-
-    @strawberry.field
-    def update_category(self, update: UpdateCategories) -> RegisterComplete:
-        return user_data_use_case.set_new_categories(update)
         
     @strawberry.field
     def register(self, regist: Register) -> RegisterComplete:
         return user_data_use_case.sign_up(regist)
-        
+    
+    @strawberry.field
+    def update_category(self, update: UpdateCategories) -> RegisterComplete:
+        return user_data_use_case.set_new_categories(update)
+
     @strawberry.field
     def update_username(self, update: UpdateUserName) -> RegisterComplete:
         return user_data_use_case.set_new_username(update)
@@ -69,6 +70,8 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 sdl = str(schema)
 
+# この部分ファイルが実行されるとちゃんと書き換わるがここにかいているのが若干違和感ある
+# ここである必要性を感じないというかエントリーポイントでやるべきなのか疑問
 with open("app/interfaces/schema.graphql", "w") as f:
     f.write(sdl)
 
@@ -90,6 +93,7 @@ app.add_middleware(
 )
 
 
+# この処理はrenderやホスティングプラットフォームでCRONで書き直すか検討中。CRONで定期実行するのと差がない気がしている
 async def send_request():
     while True:
         async with aiohttp.ClientSession() as session:

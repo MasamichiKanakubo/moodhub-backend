@@ -2,10 +2,13 @@ import random
 from app.entities.schemas import CreateRoom, JoinRoom, Room
 from app.repositories.mongo_repository import MongoRepository
 
+# Roomに関連するユースケースをまとめた。
+# 単一責任の原則は自分の解釈では一つのファイルで一つの役割をもつと思ったのでここではルームに関する機能だけを取り扱った
+# ユースケース層はentities層とrepositories層にのみ依存しているように設計
 class RoomUseCase:
     def __init__(self, mongo_repository: MongoRepository):
         self.mongo_repository = mongo_repository
-        
+    
     def add_members(self, join: JoinRoom) -> Room:
         room = self.mongo_repository.get_document(
             "RoomTable", {"room_id": join.room_id}

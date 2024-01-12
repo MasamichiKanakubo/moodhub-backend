@@ -1,3 +1,6 @@
+# インターフェイス層はGraphQLが媒介になり内部(バックエンド)とAPIをつなぐ役割だと解釈した
+# クエリやミューテーションで行われるスキーマを記述
+
 input CreateRoom {
   userId: String!
   roomName: String!

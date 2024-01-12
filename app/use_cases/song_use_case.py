@@ -8,6 +8,8 @@ from app.entities.schemas import Song
 from collections import defaultdict
 from typing import List
 
+# 曲を取得するロジックを書いたユースケース。ほかのユースケースと発想は同様。
+# というより最初にここをしゅんきくんが書いてくれたのでこれをベースにした
 class SongUseCase:
     def __init__(self, song_repository: SongRepository, mongo_repository: MongoRepository):
         self.song_repository = song_repository
