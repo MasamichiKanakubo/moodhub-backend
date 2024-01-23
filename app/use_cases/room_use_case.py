@@ -1,5 +1,5 @@
 import random
-from app.entities.schemas import CreateRoom, JoinRoom, Room
+from app.entities.schemas.room import Room, CreateRoom, JoinRoom
 from app.repositories.mongo_repository import MongoRepository
 
 # Roomに関連するユースケースをまとめた。

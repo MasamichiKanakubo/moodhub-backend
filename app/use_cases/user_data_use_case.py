@@ -1,4 +1,4 @@
-from app.entities.schemas import Register, RegisterComplete, UserDict, RoomMembers, UpdateUserName, UpdateCategories
+from app.entities.schemas.user import Register, RegisterComplete, UserDict, RoomMembers, UpdateUserName, UpdateCategories
 from app.repositories.mongo_repository import MongoRepository
 from pymongo import errors
 

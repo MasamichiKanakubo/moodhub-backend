@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..')))
 from app.repositories.mongo_repository import MongoRepository
 from app.repositories.song_repository import SongRepository
-from app.entities.schemas import Song
+from app.entities.schemas.song import Song
 from collections import defaultdict
 from typing import List
 
@@ -18,7 +18,7 @@ class SongUseCase:
 
     def get_categories(self, room_id: int) -> List[str]:
         room = self.mongo_repository.get_document("RoomTable", {"room_id": room_id})
-        member_categories_list = []
+        member_categories_list: list = []
         user_ids = room["user_id"]
         for user_id in user_ids:
             user = self.mongo_repository.get_document(
@@ -29,7 +29,7 @@ class SongUseCase:
         return member_categories_list
 
     def search_songs(self, song_categories: List[str]) -> List[Song]:
-        song_data = {}
+        song_data: dict = {}
         for song_category in song_categories:
             results = self.song_repository.get_spotify_playlist(song_category)
             # Spotifyからプレイリストを取得
@@ -54,6 +54,6 @@ class SongUseCase:
             for name, info in song_data.items()
         ]
         songs.sort(key=lambda x: len(x.categories), reverse=True)
-        sliced_songs = songs[:30]
+        sliced_songs: list = songs[:30]
         
         return sliced_songs

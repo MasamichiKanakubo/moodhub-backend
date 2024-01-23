@@ -5,10 +5,12 @@ import strawberry
 from fastapi import FastAPI
 from strawberry.asgi import GraphQL
 from fastapi.middleware.cors import CORSMiddleware
-from app.entities.schemas import (Song, Room, RegisterComplete, CreateRoom,
-                                  JoinRoom, Register, UpdateCategories, RoomMembers, UpdateUserName)
+from pymongo import MongoClient
 import asyncio
 import aiohttp
+from app.entities.schemas.song import Song
+from app.entities.schemas.room import Room, CreateRoom, JoinRoom
+from app.entities.schemas.user import Register, RegisterComplete, RoomMembers, UpdateUserName, UpdateCategories
 from app.repositories.mongo_repository import MongoRepository
 from app.repositories.song_repository import SongRepository
 from app.use_cases.song_use_case import SongUseCase
@@ -18,7 +20,7 @@ from app.use_cases.room_use_case import RoomUseCase
 load_dotenv()
 
 # リポジトリのインスタンスを作成
-mongo_repo = MongoRepository(uri=os.environ.get("MONGO_URI"), db_name="RoomDB")
+mongo_repo = MongoRepository(uri=os.environ.get("MONGO_URL"), db_name="RoomDB")
 song_repo = SongRepository(client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
 
 # ユースケースのインスタンスを作成
