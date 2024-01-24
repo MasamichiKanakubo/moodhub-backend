@@ -1,13 +1,14 @@
 import os
 from typing import List
 from dotenv import load_dotenv
-import strawberry
-from fastapi import FastAPI
-from strawberry.asgi import GraphQL
-from fastapi.middleware.cors import CORSMiddleware
-from pymongo import MongoClient
 import asyncio
 import aiohttp
+import strawberry
+from strawberry.asgi import GraphQL
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pymongo import MongoClient
+from spotipy.oauth2 import SpotifyClientCredentials
 from app.entities.schemas.song import Song
 from app.entities.schemas.room import Room, CreateRoom, JoinRoom
 from app.entities.schemas.user import Register, RegisterComplete, RoomMembers, UpdateUserName, UpdateCategories
@@ -20,19 +21,21 @@ from app.use_cases.room_use_case import RoomUseCase
 load_dotenv()
 
 # リポジトリのインスタンスを作成
-mongo_repo = MongoRepository(uri=os.environ.get("MONGO_URL"), db_name="RoomDB")
-song_repo = SongRepository(client_id=os.environ["CLIENT_ID"], client_secret=os.environ["CLIENT_SECRET"])
+mongo_repository = MongoRepository(client=MongoClient(os.environ.get("MONGO_URL")), db_name="RoomDB")
+song_repository = SongRepository(
+    client_credentials=SpotifyClientCredentials(
+        client_id=os.getenv('CLIENT_ID'), client_secret=os.getenv('CLIENT_SECRET')
+    ))
 
 # ユースケースのインスタンスを作成
-user_data_use_case = UserDataUseCase(mongo_repo)
-room_use_case = RoomUseCase(mongo_repo)
+user_data_use_case = UserDataUseCase(mongo_repository)
+room_use_case = RoomUseCase(mongo_repository)
 
 @strawberry.type
 class Query:
-    # mainはエントリーポイントだからロジック自体を別で行いリクエストに対するレスポンスだけを表示する意味で書いた
     @strawberry.field
     def song(self, room_id: int) -> List[Song]:
-        song_use_case = SongUseCase(song_repo, mongo_repo)
+        song_use_case = SongUseCase(song_repository, mongo_repository)
         categories = song_use_case.get_categories(room_id)
         return song_use_case.search_songs(categories)
     
@@ -46,7 +49,6 @@ class Query:
 
 @strawberry.type
 class Mutation:
-    # ロジックをとにかく書かないことを意識した。なんならここにMutationやQueryを書くこともおかしいんじゃないかという気もする
     @strawberry.field
     def create_room(self, room: CreateRoom) -> Room:
         return room_use_case.get_new_room(room)
@@ -72,8 +74,6 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 sdl = str(schema)
 
-# この部分ファイルが実行されるとちゃんと書き換わるがここにかいているのが若干違和感ある
-# ここである必要性を感じないというかエントリーポイントでやるべきなのか疑問
 with open("app/interfaces/schema.graphql", "w") as f:
     f.write(sdl)
 
@@ -95,7 +95,6 @@ app.add_middleware(
 )
 
 
-# この処理はrenderやホスティングプラットフォームでCRONで書き直すか検討中。CRONで定期実行するのと差がない気がしている
 async def send_request():
     while True:
         async with aiohttp.ClientSession() as session:

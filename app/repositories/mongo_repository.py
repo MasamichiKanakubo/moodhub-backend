@@ -4,8 +4,9 @@ from typing import List, Dict, Any
 
 # リポジトリ層は外部サービスやDBとの連携をする層とのことでここではMongoDBとの連携する処理を記載
 class MongoRepository:
-    def __init__(self, uri: str, db_name: str):
-        self.client = MongoClient(uri)
+    # MongoClientを受け取るように変更した
+    def __init__(self, client: MongoClient, db_name: str):
+        self.client = client
         self.db = self.client[db_name]
 
     def get_document(self, collection_name: str, query: Dict[str, Any]) -> Dict[str, Any]:
