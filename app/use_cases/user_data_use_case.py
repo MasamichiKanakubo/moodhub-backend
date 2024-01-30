@@ -1,7 +1,8 @@
-from app.entities.schemas import Register, RegisterComplete, UserDict, RoomMembers, UpdateUserName, UpdateCategories
+from app.entities.schemas.user import Register, RegisterComplete, UserDict, RoomMembers, UpdateUserName, UpdateCategories
 from app.repositories.mongo_repository import MongoRepository
 from pymongo import errors
 
+# ユーザデータの処理をするロジック
 class UserDataUseCase:
     def __init__(self, mongo_repository: MongoRepository):
         self.mongo_repository = mongo_repository
@@ -40,8 +41,9 @@ class UserDataUseCase:
     def sign_up(self, regist: Register) -> RegisterComplete:
         try:
             self.mongo_repository.insert_document(
-                "UserTable", regist
+                "UserTable", regist.__dict__
             )
+            return regist
         except errors.DuplicateKeyError:
             raise Exception('You are already registered with Moodhub')
         except Exception as e:
