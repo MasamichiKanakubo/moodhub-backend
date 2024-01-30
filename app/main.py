@@ -82,7 +82,7 @@ graphql_app = GraphQL(schema)
 
 app = FastAPI()
 
-deploy_url = "https://moodhub.azurewebsites.net"
+deploy_url = "https://mood-hub-v2.onrender.com"
 
 app.add_route("/graphql", graphql_app)
 
