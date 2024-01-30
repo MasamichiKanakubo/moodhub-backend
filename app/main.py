@@ -74,7 +74,7 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 sdl = str(schema)
 
-with open("app/interfaces/schema.graphql", "w") as f:
+with open("app/entities/graphql/schema.graphql", "w") as f:
     f.write(sdl)
 
 graphql_app = GraphQL(schema)
@@ -82,7 +82,7 @@ graphql_app = GraphQL(schema)
 
 app = FastAPI()
 
-deploy_url = "https://mood-hub-v2.onrender.com"
+deploy_url = "https://moodhub.azurewebsites.net"
 
 app.add_route("/graphql", graphql_app)
 
