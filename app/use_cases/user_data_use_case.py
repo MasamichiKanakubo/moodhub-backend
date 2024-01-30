@@ -2,7 +2,6 @@ from app.entities.schemas.user import Register, RegisterComplete, UserDict, Room
 from app.repositories.mongo_repository import MongoRepository
 from pymongo import errors
 
-# ユーザデータの処理をするロジック
 class UserDataUseCase:
     def __init__(self, mongo_repository: MongoRepository):
         self.mongo_repository = mongo_repository
