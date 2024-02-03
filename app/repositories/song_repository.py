@@ -7,7 +7,7 @@ class SongRepository:
     
     def get_spotify_playlist(self, category: str):
         # Spotify APIを使用してプレイリストを取得
-        return self.spotify_client.search(q=category, limit=2, market="JP", type="playlist")
+        return self.spotify_client.search(q=category, limit=3, market="JP", type="playlist")
     
     def get_spotify_playlist_tracks(self, playlist_id: str):
         # Spotify APIを使用してプレイリストの曲を取得
