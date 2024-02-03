@@ -48,7 +48,6 @@ class SongUseCase:
                         song_data[name] = {"categories": set(), "track_id": track_id}
                     
                     song_data[name]["categories"].add(song_category)
-        print(song_data)
         songs = [
             Song(song_name=name, categories=list(info["categories"]), track_id=info["track_id"])
             for name, info in song_data.items()
