@@ -21,7 +21,7 @@ from app.use_cases.room_use_case import RoomUseCase
 load_dotenv()
 
 # リポジトリのインスタンスを作成
-mongo_repository = MongoRepository(client=MongoClient(os.environ.get("MONGO_URI")), db_name="RoomDB")
+mongo_repository = MongoRepository(client=MongoClient(os.environ.get("MONGO_URL")), db_name="RoomDB")
 song_repository = SongRepository(
     client_credentials=SpotifyClientCredentials(
         client_id=os.getenv('CLIENT_ID'), client_secret=os.getenv('CLIENT_SECRET')
@@ -94,10 +94,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+connector = aiohttp.TCPConnector(ssl=False)
 
 async def send_request():
     while True:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(deploy_url) as response:
                 print(await response.text())
         await asyncio.sleep(60)  # 60秒ごとにリクエストを送信
