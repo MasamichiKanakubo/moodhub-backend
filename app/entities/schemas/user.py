@@ -19,6 +19,10 @@ class UserDict:
 class RoomMembers:
     room_name: str
     members_info_list: List[UserDict]
+    
+@strawberry.type
+class TextMessage:
+    message: str
 
 @strawberry.input
 class Register:
@@ -38,4 +42,11 @@ class UpdateCategories:
 class UpdateUserName:
     user_id: str
     user_name: Optional[str] = None   
+    
+@strawberry.input
+class UpdateAvatar:
+    user_id: str
+    avatar_url: str
+    
+
     

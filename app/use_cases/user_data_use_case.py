@@ -1,4 +1,6 @@
-from app.entities.schemas.user import Register, RegisterComplete, UserDict, RoomMembers, UpdateUserName, UpdateCategories
+from app.entities.schemas.user import (
+    Register, RegisterComplete, UserDict, RoomMembers, UpdateUserName, UpdateCategories, UpdateAvatar, TextMessage
+    )
 from app.repositories.mongo_repository import MongoRepository
 from pymongo import errors
 
@@ -78,3 +80,19 @@ class UserDataUseCase:
             categories=user["categories"],
         )
     
+    def set_new_avatar(self, update: UpdateAvatar) -> RegisterComplete:
+        self.mongo_repository.set_document(
+            "UserTable",
+            {"user_id": update.user_id},
+            {"avatar_url": update.avatar_url}
+        )
+        return RegisterComplete(
+            user_id=update.user_id,
+            avatar_url=update.avatar_url
+        )
+        
+    def remove_user_info(self, user_id: str) -> TextMessage:
+        self.mongo_repository.delete_document(
+            "UserTable", {"user_id": user_id}
+        )
+        return TextMessage(message=f"user_id: {user_id} has been deleted successfully.")

@@ -14,12 +14,14 @@ type Mutation {
   register(regist: Register!): RegisterComplete!
   updateCategory(update: UpdateCategories!): RegisterComplete!
   updateUsername(update: UpdateUserName!): RegisterComplete!
+  updateAvatar(update: UpdateAvatar!): RegisterComplete!
 }
 
 type Query {
   song(roomId: Int!): [Song!]!
   getUserInfo(userId: String!): RegisterComplete!
   getMembers(roomId: Int!): RoomMembers!
+  deleteUser(userId: String!): TextMessage!
 }
 
 input Register {
@@ -55,6 +57,15 @@ type Song {
   songName: String!
   categories: [String!]!
   trackId: String!
+}
+
+type TextMessage {
+  message: String!
+}
+
+input UpdateAvatar {
+  userId: String!
+  avatarUrl: String!
 }
 
 input UpdateCategories {
