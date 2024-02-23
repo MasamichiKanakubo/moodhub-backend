@@ -1,6 +1,7 @@
 import os
 from typing import List
 from dotenv import load_dotenv
+import certifi
 import asyncio
 import aiohttp
 import strawberry
@@ -30,8 +31,7 @@ load_dotenv()
 
 # リポジトリのインスタンスを作成
 mongo_repository = MongoRepository(
-    client=MongoClient(os.environ.get("MONGO_URL"), tlsAllowInvalidCertificates=True),
-    db_name="RoomDB",
+    client=MongoClient(os.environ.get("MONGO_URL"),  tlsCAFile=certifi.where()), db_name="RoomDB",
 )
 song_repository = SongRepository(
     client_credentials=SpotifyClientCredentials(
