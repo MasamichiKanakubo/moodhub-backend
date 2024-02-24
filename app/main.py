@@ -31,7 +31,8 @@ load_dotenv()
 
 # リポジトリのインスタンスを作成
 mongo_repository = MongoRepository(
-    client=MongoClient(os.environ.get("MONGO_URL"),  tlsCAFile=certifi.where()), db_name="RoomDB",
+    client=MongoClient(os.environ.get("MONGO_URL"),  tlsCAFile=certifi.where()), 
+    db_name="RoomDB",
 )
 song_repository = SongRepository(
     client_credentials=SpotifyClientCredentials(
@@ -42,7 +43,6 @@ song_repository = SongRepository(
 # ユースケースのインスタンスを作成
 user_data_use_case = UserDataUseCase(mongo_repository)
 room_use_case = RoomUseCase(mongo_repository)
-
 
 @strawberry.type
 class Query:
