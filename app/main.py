@@ -104,7 +104,7 @@ graphql_app = GraphQL(schema)
 
 app = FastAPI()
 
-deploy_url = "https://mood-hub-v2.onrender.com"
+deploy_url = "https://moodhub-ez45wpznlq-an.a.run.app"
 
 app.add_route("/graphql", graphql_app)
 
@@ -124,7 +124,7 @@ async def send_request():
         async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(deploy_url) as response:
                 print(await response.text())
-        await asyncio.sleep(60)  # 60秒ごとにリクエストを送信
+        await asyncio.sleep(50)  # 50秒ごとにリクエストを送信
 
 
 @app.on_event("startup")
