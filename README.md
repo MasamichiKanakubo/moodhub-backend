@@ -8,6 +8,11 @@ API URL: https://mood-hub-v2.onrender.com
 
 ## Introduciton
 MoodHub is a search engine for groups. You can recommend songs that everyone knows at karaoke, driving, parties, etc.
+
+## Architecture
+![アーキテクチャ (2)](https://github.com/MasamichiKanakubo/moodhub-backend/assets/133827507/e71ccdb6-4f88-45c1-a3ff-53895e93eb84)
+
+
 We can provide you with a comfortable musical life.
 
 ## search tracks
